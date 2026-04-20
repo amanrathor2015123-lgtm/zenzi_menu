@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Zenji – Digital Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --red: #d63031;
+    --gold: #f0a500;
+    --dark: #1a0a00;
+    --card: #fff8f0;
+    --text: #2d1a00;
+    --green: #00b894;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #fff8f0;
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ========== QR PAGE ========== */
+  #qr-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a0a00 0%, #3d1500 60%, #1a0a00 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  #qr-page::before {
+    content: '🐉';
+    font-size: 300px;
+    position: absolute;
+    opacity: 0.04;
+    top: -40px; right: -60px;
+  }
+  .qr-logo {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 52px;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(240,165,0,0.5);
+    margin-bottom: 4px;
+    letter-spacing: 4px;
+  }
+  .qr-tagline {
+    font-size: 13px;
+    color: #c8956a;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .qr-box {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    margin-bottom: 24px;
+    border: 4px solid var(--gold);
+  }
+  .qr-instruction {
+    font-size: 15px;
+    color: #e8c97a;
+    text-align: center;
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .qr-sub {
+    font-size: 12px;
+    color: #a07850;
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .open-menu-btn {
+    background: var(--gold);
+    color: #1a0a00;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 14px 40px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(240,165,0,0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .open-menu-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(240,165,0,0.5); }
+  .lantern { font-size: 32px; animation: swing 2s ease-in-out infinite alternate; }
+  @keyframes swing { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+  .lanterns-row { display:flex; gap: 24px; margin-bottom: 20px; }
+
+  /* ========== MENU PAGE ========== */
+  #menu-page { display: none; min-height: 100vh; }
+
+  .menu-header {
+    background: linear-gradient(135deg, #1a0a00, #3d1500);
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0; z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .menu-logo-text {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 28px;
+    color: var(--gold);
+    letter-spacing: 3px;
+  }
+  .cart-btn {
+    background: var(--gold);
+    border: none;
+    border-radius: 50px;
+    padding: 8px 18px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1a0a00;
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cart-count {
+    background: var(--red);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu-welcome {
+    background: #fff3e8;
+    padding: 16px 20px;
+    border-bottom: 2px solid #ffd8a8;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .menu-welcome-text h2 { font-size: 18px; font-weight: 700; color: var(--dark); }
+  .menu-welcome-text p { font-size: 12px; color: #a07850; margin-top: 2px; }
+
+  .menu-section-title {
+    background: var(--dark);
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 10px 20px;
+  }
+
+  .menu-items { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  .menu-item {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: 1px solid #ffe8cc;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .menu-item:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+
+  .item-emoji { font-size: 38px; line-height: 1; }
+
+  .item-info { flex: 1; }
+  .item-name { font-size: 16px; font-weight: 700; color: var(--dark); }
+  .item-desc { font-size: 11px; color: #a07850; margin-top: 2px; }
+  .item-price { font-size: 18px; font-weight: 800; color: var(--red); margin-top: 4px; }
+  .item-per { font-size: 10px; color: #bbb; font-weight: 500; }
+
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff3e8;
+    border-radius: 50px;
+    padding: 6px 10px;
+    border: 1.5px solid #ffd8a8;
+  }
+  .qty-btn {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+  }
+  .qty-btn.minus { background: #fff; color: var(--red); border: 1.5px solid #ffd8a8; }
+  .qty-btn.plus { background: var(--red); color: #fff; }
+  .qty-btn:hover { transform: scale(1.1); }
+  .qty-num { font-size: 16px; font-weight: 800; min-width: 20px; text-align: center; color: var(--dark); }
+
+  /* ========== CART / ORDER PAGE ========== */
+  #cart-page { display: none; min-height: 100vh; background: #fff8f0; }
+
+  .cart-header {
+    background: linear-gradient(135deg, #1a0a00, #3d1500);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .back-btn {
+    background: rgba(255,255,255,0.1);
+    border: none;
+    color: var(--gold);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 10px;
+  }
+  .cart-header-title { font-size: 20px; font-weight: 700; color: var(--gold); font-family: 'Noto Serif SC', serif; }
+
+  .cart-items { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .cart-item {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1px solid #ffe8cc;
+  }
+  .cart-item-left { display: flex; align-items: center; gap: 10px; }
+  .cart-item-emoji { font-size: 28px; }
+  .cart-item-name { font-size: 15px; font-weight: 700; }
+  .cart-item-qty { font-size: 12px; color: #a07850; margin-top: 2px; }
+  .cart-item-price { font-size: 16px; font-weight: 800; color: var(--red); }
+
+  .cart-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #c8a07a;
+  }
+  .cart-empty .big { font-size: 60px; margin-bottom: 12px; }
+  .cart-empty p { font-size: 15px; }
+
+  .cart-total-box {
+    margin: 0 16px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px;
+    border: 2px solid #ffd8a8;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+  }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #a07850;
+    padding: 4px 0;
+  }
+  .total-row.final {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--dark);
+    border-top: 2px dashed #ffd8a8;
+    margin-top: 8px;
+    padding-top: 12px;
+  }
+  .total-row.final span:last-child { color: var(--red); }
+
+  .order-btn {
+    margin: 16px;
+    width: calc(100% - 32px);
+    background: var(--red);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    padding: 16px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(214,48,49,0.4);
+    letter-spacing: 0.5px;
+    transition: transform 0.2s;
+  }
+  .order-btn:hover { transform: translateY(-2px); }
+
+  /* ========== PAYMENT PAGE ========== */
+  #payment-page { display: none; min-height: 100vh; background: #fff8f0; }
+
+  .payment-options {
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .payment-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--dark);
+    padding: 20px 16px 4px;
+  }
+  .payment-subtitle { font-size: 13px; color: #a07850; padding: 0 16px 16px; }
+
+  .payment-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    border: 2px solid #ffe8cc;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .payment-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.12); }
+  .payment-card.cash { border-color: var(--green); }
+  .payment-card.online { border-color: #6c5ce7; }
+
+  .payment-icon { font-size: 40px; }
+  .payment-info h3 { font-size: 18px; font-weight: 700; color: var(--dark); }
+  .payment-info p { font-size: 12px; color: #a07850; margin-top: 3px; }
+
+  .payment-amount-box {
+    margin: 0 16px 8px;
+    background: linear-gradient(135deg, #1a0a00, #3d1500);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .payment-amount-label { font-size: 13px; color: #c8956a; }
+  .payment-amount-value { font-size: 26px; font-weight: 900; color: var(--gold); }
+
+  /* ========== BILL PAGE ========== */
+  #bill-page { display: none; min-height: 100vh; background: #f5f5f5; }
+
+  .bill-paper {
+    background: #fff;
+    margin: 20px 16px;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+  }
+  .bill-paper::before, .bill-paper::after {
+    content: '';
+    display: block;
+    height: 14px;
+    background: repeating-linear-gradient(90deg, #f5f5f5 0px, #f5f5f5 14px, #fff 14px, #fff 28px);
+  }
+
+  .bill-header {
+    text-align: center;
+    padding: 10px 20px 16px;
+    border-bottom: 1px dashed #ddd;
+  }
+  .bill-shop-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 30px;
+    color: var(--red);
+    letter-spacing: 3px;
+  }
+  .bill-shop-sub { font-size: 11px; color: #999; letter-spacing: 2px; text-transform: uppercase; }
+  .bill-divider { border: none; border-top: 1px dashed #ddd; margin: 12px 0; }
+
+  .bill-meta {
+    padding: 8px 20px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #777;
+  }
+
+  .bill-items { padding: 0 20px; }
+  .bill-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dotted #eee;
+    font-size: 14px;
+  }
+  .bill-item-name { font-weight: 600; color: var(--dark); flex: 1; }
+  .bill-item-qty { color: #999; font-size: 12px; margin: 0 12px; }
+  .bill-item-amt { font-weight: 700; color: var(--dark); }
+
+  .bill-totals { padding: 10px 20px; }
+  .bill-total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #777;
+    padding: 4px 0;
+  }
+  .bill-grand {
+    display: flex;
+    justify-content: space-between;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--dark);
+    padding: 10px 0 4px;
+    border-top: 2px solid var(--dark);
+    margin-top: 6px;
+  }
+  .bill-grand span:last-child { color: var(--red); }
+
+  .bill-payment-mode {
+    text-align: center;
+    padding: 10px 20px;
+    font-size: 13px;
+    color: #999;
+  }
+  .bill-payment-mode span { font-weight: 700; color: var(--green); }
+
+  .bill-footer {
+    text-align: center;
+    padding: 10px 20px 14px;
+    border-top: 1px dashed #ddd;
+  }
+  .bill-thanks { font-size: 16px; font-weight: 700; color: var(--red); margin-bottom: 3px; }
+  .bill-visit { font-size: 11px; color: #bbb; }
+
+  /* UPI page */
+  #upi-page { display: none; min-height: 100vh; background: #fff8f0; }
+  .upi-box {
+    margin: 20px 16px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 2px solid #e8d5ff;
+  }
+  .upi-title { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+  .upi-amount { font-size: 36px; font-weight: 900; color: #6c5ce7; margin: 16px 0; }
+  .upi-qr-box {
+    background: #fff;
+    border: 3px solid #6c5ce7;
+    border-radius: 16px;
+    padding: 16px;
+    display: inline-block;
+    margin: 16px 0;
+  }
+  .upi-options {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .upi-app-btn {
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 2px solid #6c5ce7;
+    background: #fff;
+    color: #6c5ce7;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .upi-app-btn:hover { background: #6c5ce7; color: #fff; }
+  .upi-id { font-size: 13px; color: #a07850; margin-top: 12px; }
+  .upi-id span { font-weight: 700; color: #6c5ce7; }
+
+  .done-btn {
+    margin: 16px;
+    width: calc(100% - 32px);
+    background: var(--green);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 14px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .new-order-btn {
+    margin: 16px;
+    width: calc(100% - 32px);
+    background: var(--dark);
+    color: var(--gold);
+    font-size: 16px;
+    font-weight: 800;
+    padding: 14px;
+    border-radius: 50px;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== QR PAGE ==================== -->
+<div id="qr-page">
+  <div class="lanterns-row">
+    <span class="lantern">🏮</span>
+    <span class="lantern" style="animation-delay:0.5s">🏮</span>
+    <span class="lantern" style="animation-delay:1s">🏮</span>
+  </div>
+  <div class="qr-logo">禅记</div>
+  <div class="qr-tagline">Zenji • Chinese Kitchen</div>
+  <div class="qr-instruction">📱 Scan karo & Order karo!</div>
+  <div class="qr-sub">Scan this QR with your phone camera</div>
+  <div class="qr-box">
+    <div id="qrcode"></div>
+  </div>
+  <div style="margin-bottom:20px"></div>
+  <button class="open-menu-btn" onclick="showPage('menu')">🍜 Menu Kholein →</button>
+</div>
+
+<!-- ==================== MENU PAGE ==================== -->
+<div id="menu-page">
+  <div class="menu-header">
+    <div class="menu-logo-text">禅记 Zenji</div>
+    <button class="cart-btn" onclick="showPage('cart')">
+      🛒 Cart <div class="cart-count" id="cart-count">0</div>
+    </button>
+  </div>
+
+  <div class="menu-welcome">
+    <span style="font-size:36px">🥢</span>
+    <div class="menu-welcome-text">
+      <h2>Aaj kya khayenge? 😊</h2>
+      <p>Fresh • Tasty • Quick — Zenji Chinese Kitchen</p>
+    </div>
+  </div>
+
+  <div class="menu-section-title">🍜 Main Course</div>
+  <div class="menu-items">
+
+    <div class="menu-item">
+      <div class="item-emoji">🍝</div>
+      <div class="item-info">
+        <div class="item-name">Noodles</div>
+        <div class="item-desc">Wok-tossed hakka noodles, spicy & fresh</div>
+        <div class="item-price">₹50 <span class="item-per">/ plate</span></div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('noodles', -1)">−</button>
+        <span class="qty-num" id="qty-noodles">0</span>
+        <button class="qty-btn plus" onclick="changeQty('noodles', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="menu-item">
+      <div class="item-emoji">🥟</div>
+      <div class="item-info">
+        <div class="item-name">Idaly</div>
+        <div class="item-desc">Soft steamed idaly — 3 pieces</div>
+        <div class="item-price">₹50 <span class="item-per">/ 3 pcs</span></div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('idaly', -1)">−</button>
+        <span class="qty-num" id="qty-idaly">0</span>
+        <button class="qty-btn plus" onclick="changeQty('idaly', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="menu-item">
+      <div class="item-emoji">🍱</div>
+      <div class="item-info">
+        <div class="item-name">Khamand</div>
+        <div class="item-desc">Fluffy dhokla-style khamand — 3 pieces</div>
+        <div class="item-price">₹50 <span class="item-per">/ 3 pcs</span></div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('khamand', -1)">−</button>
+        <span class="qty-num" id="qty-khamand">0</span>
+        <button class="qty-btn plus" onclick="changeQty('khamand', 1)">+</button>
+      </div>
+    </div>
+
+    <div class="menu-item">
+      <div class="item-emoji">🥐</div>
+      <div class="item-info">
+        <div class="item-name">Samose</div>
+        <div class="item-desc">Crispy golden samosa — each piece</div>
+        <div class="item-price">₹20 <span class="item-per">/ pc</span></div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('samose', -1)">−</button>
+        <span class="qty-num" id="qty-samose">0</span>
+        <button class="qty-btn plus" onclick="changeQty('samose', 1)">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="menu-section-title">🥤 Drinks</div>
+  <div class="menu-items" style="margin-bottom:100px">
+
+    <div class="menu-item">
+      <div class="item-emoji">🥤</div>
+      <div class="item-info">
+        <div class="item-name">Cold Drink</div>
+        <div class="item-desc">Refreshing chilled cold drink</div>
+        <div class="item-price">₹30 <span class="item-per">/ bottle</span></div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn minus" onclick="changeQty('colddrink', -1)">−</button>
+        <span class="qty-num" id="qty-colddrink">0</span>
+        <button class="qty-btn plus" onclick="changeQty('colddrink', 1)">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Sticky bottom bar -->
+  <div style="position:fixed;bottom:0;left:0;right:0;background:#fff;padding:14px 16px;box-shadow:0 -4px 20px rgba(0,0,0,0.1);border-top:2px solid #ffe8cc;z-index:200">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:14px;color:#a07850;font-weight:600">Total Items: <strong id="bottom-count" style="color:var(--dark)">0</strong></span>
+      <span style="font-size:18px;font-weight:800;color:var(--red)" id="bottom-total">₹0</span>
+    </div>
+    <button class="order-btn" style="margin:0;width:100%" onclick="showPage('cart')">🛒 Order Dekhein →</button>
+  </div>
+</div>
+
+<!-- ==================== CART PAGE ==================== -->
+<div id="cart-page">
+  <div class="cart-header">
+    <button class="back-btn" onclick="showPage('menu')">←</button>
+    <div class="cart-header-title">🛒 Aapka Order</div>
+  </div>
+
+  <div id="cart-items-list" class="cart-items"></div>
+
+  <div id="cart-summary" style="display:none">
+    <div class="cart-total-box">
+      <div class="total-row"><span>Subtotal</span><span id="subtotal-val">₹0</span></div>
+      <div class="total-row"><span>GST (5%)</span><span id="gst-val">₹0</span></div>
+      <div class="total-row final"><span>🧾 Total</span><span id="final-val">₹0</span></div>
+    </div>
+    <button class="order-btn" onclick="showPage('payment')">✅ Place Order →</button>
+  </div>
+</div>
+
+<!-- ==================== PAYMENT PAGE ==================== -->
+<div id="payment-page">
+  <div class="cart-header">
+    <button class="back-btn" onclick="showPage('cart')">←</button>
+    <div class="cart-header-title">💳 Payment</div>
+  </div>
+
+  <div class="payment-amount-box">
+    <div>
+      <div class="payment-amount-label">Bhugtan karein</div>
+      <div class="payment-amount-value" id="pay-amount">₹0</div>
+    </div>
+    <span style="font-size:32px">🧾</span>
+  </div>
+
+  <div class="payment-title">Payment kaise karein?</div>
+  <div class="payment-subtitle">Apna pasandida tarika chunein 👇</div>
+
+  <div class="payment-options">
+    <div class="payment-card cash" onclick="showBill('cash')">
+      <div class="payment-icon">💵</div>
+      <div class="payment-info">
+        <h3>Cash Payment</h3>
+        <p>Haath mein cash dein — bill abhi milega</p>
+      </div>
+      <span style="font-size:24px;margin-left:auto">→</span>
+    </div>
+
+    <div class="payment-card online" onclick="showPage('upi')">
+      <div class="payment-icon">📱</div>
+      <div class="payment-info">
+        <h3>Online / UPI</h3>
+        <p>PhonePe • GPay • Paytm • UPI se dein</p>
+      </div>
+      <span style="font-size:24px;margin-left:auto">→</span>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== UPI PAGE ==================== -->
+<div id="upi-page">
+  <div class="cart-header">
+    <button class="back-btn" onclick="showPage('payment')">←</button>
+    <div class="cart-header-title">📱 Online Payment</div>
+  </div>
+  <div class="upi-box">
+    <div class="upi-title">🏮 Zenji Chinese Kitchen</div>
+    <div style="font-size:13px;color:#a07850">Scan karein ya app se pay karein</div>
+    <div class="upi-amount" id="upi-amount">₹0</div>
+    <div class="upi-qr-box">
+      <div id="upi-qr"></div>
+    </div>
+    <div class="upi-id">UPI ID: <span>zenji@upi</span></div>
+    <div class="upi-options">
+      <button class="upi-app-btn">📱 PhonePe</button>
+      <button class="upi-app-btn">🟢 GPay</button>
+      <button class="upi-app-btn">💙 Paytm</button>
+    </div>
+  </div>
+  <button class="done-btn" onclick="showBill('online')">✅ Payment Ho Gayi → Bill Lein</button>
+</div>
+
+<!-- ==================== BILL PAGE ==================== -->
+<div id="bill-page">
+  <div class="cart-header">
+    <button class="back-btn" onclick="showPage('menu')">🏠 Home</button>
+    <div class="cart-header-title">🧾 Bill</div>
+  </div>
+
+  <div class="bill-paper">
+    <div class="bill-header">
+      <div class="bill-shop-name">禅记 Zenji</div>
+      <div class="bill-shop-sub">Chinese Kitchen • Ujjain</div>
+    </div>
+    <div class="bill-meta">
+      <span id="bill-date"></span>
+      <span id="bill-order-no"></span>
+    </div>
+    <hr class="bill-divider">
+    <div class="bill-items" id="bill-items-list"></div>
+    <div class="bill-totals">
+      <div class="bill-total-row"><span>Subtotal</span><span id="bill-subtotal">₹0</span></div>
+      <div class="bill-total-row"><span>GST (5%)</span><span id="bill-gst">₹0</span></div>
+      <div class="bill-grand"><span>💰 TOTAL</span><span id="bill-total">₹0</span></div>
+    </div>
+    <div class="bill-payment-mode">Payment: <span id="bill-pay-mode">Cash</span></div>
+    <hr class="bill-divider">
+    <div class="bill-footer">
+      <div class="bill-thanks">🙏 Shukriya!</div>
+      <div class="bill-visit">Dobara zaroor aaiye • Zenji Chinese Kitchen</div>
+    </div>
+  </div>
+
+  <button class="new-order-btn" onclick="resetOrder()">🍜 Naya Order</button>
+</div>
+
+<script>
+  // Menu items data
+  const items = {
+    noodles:   { name: 'Noodles',    emoji: '🍝', price: 50,  unit: 'plate' },
+    idaly:     { name: 'Idaly',      emoji: '🥟', price: 50,  unit: '3 pcs' },
+    khamand:   { name: 'Khamand',    emoji: '🍱', price: 50,  unit: '3 pcs' },
+    samose:    { name: 'Samose',     emoji: '🥐', price: 20,  unit: 'pc' },
+    colddrink: { name: 'Cold Drink', emoji: '🥤', price: 30,  unit: 'bottle' },
+  };
+
+  let cart = {};
+  let paymentMode = 'Cash';
+
+  function changeQty(key, delta) {
+    cart[key] = Math.max(0, (cart[key] || 0) + delta);
+    document.getElementById('qty-' + key).textContent = cart[key];
+    updateBottomBar();
+    updateCartCount();
+  }
+
+  function updateCartCount() {
+    const total = Object.values(cart).reduce((a, b) => a + b, 0);
+    document.getElementById('cart-count').textContent = total;
+  }
+
+  function getSubtotal() {
+    return Object.entries(cart).reduce((sum, [k, q]) => sum + (items[k].price * q), 0);
+  }
+
+  function updateBottomBar() {
+    const sub = getSubtotal();
+    const count = Object.values(cart).reduce((a, b) => a + b, 0);
+    document.getElementById('bottom-total').textContent = '₹' + sub;
+    document.getElementById('bottom-count').textContent = count;
+  }
+
+  function showPage(page) {
+    ['qr-page','menu-page','cart-page','payment-page','upi-page','bill-page'].forEach(p => {
+      document.getElementById(p).style.display = 'none';
+    });
+    if (page === 'qr') document.getElementById('qr-page').style.display = 'flex';
+    else document.getElementById(page + '-page').style.display = 'block';
+
+    if (page === 'cart') renderCart();
+    if (page === 'payment') renderPaymentAmount();
+    if (page === 'upi') renderUPI();
+    window.scrollTo(0, 0);
+  }
+
+  function renderCart() {
+    const list = document.getElementById('cart-items-list');
+    const summary = document.getElementById('cart-summary');
+    list.innerHTML = '';
+    const entries = Object.entries(cart).filter(([k, q]) => q > 0);
+
+    if (entries.length === 0) {
+      list.innerHTML = `<div class="cart-empty"><div class="big">🛒</div><p>Cart khali hai!<br>Menu se kuch add karein 😊</p></div>`;
+      summary.style.display = 'none';
+      return;
+    }
+
+    entries.forEach(([key, qty]) => {
+      const item = items[key];
+      const amt = item.price * qty;
+      list.innerHTML += `
+        <div class="cart-item">
+          <div class="cart-item-left">
+            <div class="cart-item-emoji">${item.emoji}</div>
+            <div>
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-qty">× ${qty} ${item.unit}</div>
+            </div>
+          </div>
+          <div class="cart-item-price">₹${amt}</div>
+        </div>`;
+    });
+
+    const sub = getSubtotal();
+    const gst = Math.round(sub * 0.05);
+    const total = sub + gst;
+
+    document.getElementById('subtotal-val').textContent = '₹' + sub;
+    document.getElementById('gst-val').textContent = '₹' + gst;
+    document.getElementById('final-val').textContent = '₹' + total;
+    summary.style.display = 'block';
+  }
+
+  function renderPaymentAmount() {
+    const sub = getSubtotal();
+    const total = sub + Math.round(sub * 0.05);
+    document.getElementById('pay-amount').textContent = '₹' + total;
+  }
+
+  function renderUPI() {
+    const sub = getSubtotal();
+    const total = sub + Math.round(sub * 0.05);
+    document.getElementById('upi-amount').textContent = '₹' + total;
+
+    const upiBox = document.getElementById('upi-qr');
+    upiBox.innerHTML = '';
+    new QRCode(upiBox, {
+      text: `upi://pay?pa=zenji@upi&pn=Zenji+Chinese+Kitchen&am=${total}&cu=INR`,
+      width: 180, height: 180,
+      colorDark: '#6c5ce7', colorLight: '#ffffff'
+    });
+  }
+
+  function showBill(mode) {
+    paymentMode = mode === 'cash' ? 'Cash 💵' : 'Online / UPI 📱';
+    const sub = getSubtotal();
+    const gst = Math.round(sub * 0.05);
+    const total = sub + gst;
+
+    // Date
+    const now = new Date();
+    document.getElementById('bill-date').textContent = now.toLocaleDateString('hi-IN', {day:'numeric', month:'short', year:'numeric'}) + ' ' + now.toLocaleTimeString('hi-IN', {hour:'2-digit', minute:'2-digit'});
+    document.getElementById('bill-order-no').textContent = 'Order #' + Math.floor(Math.random() * 9000 + 1000);
+
+    // Items
+    const billList = document.getElementById('bill-items-list');
+    billList.innerHTML = '';
+    Object.entries(cart).filter(([k,q]) => q > 0).forEach(([key, qty]) => {
+      const item = items[key];
+      billList.innerHTML += `
+        <div class="bill-item-row">
+          <span class="bill-item-name">${item.emoji} ${item.name}</span>
+          <span class="bill-item-qty">×${qty}</span>
+          <span class="bill-item-amt">₹${item.price * qty}</span>
+        </div>`;
+    });
+
+    document.getElementById('bill-subtotal').textContent = '₹' + sub;
+    document.getElementById('bill-gst').textContent = '₹' + gst;
+    document.getElementById('bill-total').textContent = '₹' + total;
+    document.getElementById('bill-pay-mode').textContent = paymentMode;
+
+    showPage('bill');
+  }
+
+  function resetOrder() {
+    Object.keys(cart).forEach(k => {
+      cart[k] = 0;
+      const el = document.getElementById('qty-' + k);
+      if (el) el.textContent = '0';
+    });
+    updateBottomBar();
+    updateCartCount();
+    showPage('menu');
+  }
+
+  // Generate QR for menu page URL
+  window.onload = function() {
+    const menuUrl = window.location.href;
+    new QRCode(document.getElementById('qrcode'), {
+      text: menuUrl,
+      width: 200, height: 200,
+      colorDark: '#1a0a00', colorLight: '#ffffff'
+    });
+  };
+</script>
+</body>
+</html>
