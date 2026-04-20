@@ -651,7 +651,7 @@
       <div class="total-row"><span>GST (5%)</span><span id="gst-val">₹0</span></div>
       <div class="total-row final"><span>🧾 Total</span><span id="final-val">₹0</span></div>
     </div>
-    <button class="order-btn" onclick="showPage('payment')">✅ Place Order →</button>
+    <button class="order-btn" onclick="sendWhatsAppOrder()">✅ Order WhatsApp par bhejein →</button>
   </div>
 </div>
 
@@ -910,6 +910,36 @@
       colorDark: '#1a0a00', colorLight: '#ffffff'
     });
   };
+  function sendWhatsAppOrder() {
+  const entries = Object.entries(cart).filter(([k, q]) => q > 0);
+
+  if (entries.length === 0) {
+    alert("Pehle kuch order add karo 😊");
+    return;
+  }
+
+  let message = "🍜 *Zenji Chinese Kitchen Order* 🍜\n\n";
+
+  entries.forEach(([key, qty]) => {
+    const item = items[key];
+    message += `👉 ${item.name} × ${qty} = ₹${item.price * qty}\n`;
+  });
+
+  const sub = getSubtotal();
+  const gst = Math.round(sub * 0.05);
+  const total = sub + gst;
+
+  message += `\nSubtotal: ₹${sub}`;
+  message += `\nGST (5%): ₹${gst}`;
+  message += `\n💰 *Total: ₹${total}*`;
+
+  // WhatsApp number (no +)
+  const phone = "917974074421";
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+  window.open(url, '_blank');
+}
 </script>
 </body>
 </html>
